@@ -9,7 +9,8 @@ This is a plugin for **Question2Answer** that provides site networking capabilit
 --------
 Features
 --------
-- adds site icons and site points to user_meta
+- adds individual active site icons and site points to user_meta
+- option to restrict "active" to minimum score per site
 - optionally shows network points instead of this site points in user_meta
 - widget lists all sites in network
 
