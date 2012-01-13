@@ -44,7 +44,9 @@ It is also possible to setup two sites to use the same set of php files, though 
 ::
 	define('QA_MYSQL_TABLE_PREFIX', 'qa_');
 
-2. Edit index.php and add the above line there.
+2. Edit index.php and add the above line there, before the following line:
+::
+	require 'qa-include/qa-index.php';
 
 3. Make a new directory somewhere else on your server where the second site will reside.  Add a new index.php file to that directory.
 
