@@ -39,28 +39,23 @@ Sites
 -----------
 Networking sites is partially enabled in the core; there are various ways to accomplish this, depending on your site setup.  If you are using single-sign-on or Wordpress integration, you are half-way there.  If you are not, see the instructions in qa-config.php to set up your sites to user the same qa_users table.  Either way, **both sets of database tables must be in the same database** for this plugin to work.
 
-It is also possible to setup two sites to use the same set of php files, though this is a bit of a hack.  To do this, here's what I do:
+It is also possible to setup two sites to use the same set of php files, though it is not necessary.  To accomplish this, here's what I do:
 
-1. Choose one site as the parent, where the code will reside.  Edit qa-config.php and comment out (or remove) the line that says:
+1. Place your source Q2A files in a directory outside of your site root, e.g. /home/me/q2a/
+
+2. Make a new directory somewhere else on your server where your actual q2a site will reside, e.g. /var/www/q2a/
+
+3. Make symbolic links from the source files (not the root directory) to the new directory:
 ::
-	define('QA_MYSQL_TABLE_PREFIX', 'qa_');
+    ln -s /home/me/q2a/* /var/www/q2a/
 
-2. Edit index.php and add the above line there, before the following line:
-::
-	require 'qa-include/qa-index.php';
+4. Copy the original qa-config-example.php to qa-config.php in the new directory    
 
-3. Make a new directory somewhere else on your server where the second site will reside.  Add a new index.php file to that directory.
+5. Edit the new qa-config.php file as needed, using a unique table prefix.
 
-4. Make symbolic links from the first site's qa-content, qa-theme, and qa-plugin directories to this new directory.
+6. Repeat steps 2-5 for each site, making sure the table prefix of each site is unique.
 
-5. Edit the new index.php file to read as follows:
-::
-	<?php
-		define('QA_BASE_DIR','/var/www/q2a/' ); // where your original directory is on the server
-		define('QA_MYSQL_TABLE_PREFIX', 'qa2_'); // the second site's prefix
-		require('/var/www/q2a/qa-include/qa-index.php'); // where this file is in the qa-include directory of the original install.
-		
-This seems to work with Q2A 1.5 to allow multiple sites to use the same core code, plugins, and themes.
+This seems to work with Q2A 1.5 to allow multiple sites to use the same core code, plugins, and themes.  If you want to use unique sets of plugins and themes for each site, just delete the symlink for the qa-theme and qa-plugin directories for that site, and replace them with actual directories with actual plugins and themes.
 
 ----------
 Disclaimer
