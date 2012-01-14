@@ -49,6 +49,10 @@ It is also possible to setup two sites to use the same set of php files, though 
 ::
     ln -s /home/me/q2a/* /var/www/q2a/
 
+Note: if you are going to use neat urls, copy or link to the original .htaccess as well:
+::
+    ln -s /home/me/q2a/.htaccess /var/www/q2a/
+
 4. Copy the original qa-config-example.php to qa-config.php in the new directory    
 
 5. Edit the new qa-config.php file as needed, using a unique table prefix.
