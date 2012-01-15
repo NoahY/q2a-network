@@ -13,6 +13,8 @@ Features
 - option to restrict "active" to minimum score per site
 - optionally shows network points instead of this site points in user_meta
 - widget lists all sites in network
+- ability to migrate questions, including entire set of children and grandchildren (see `Migrating`_ below)
+- show optional migrated notice below questions
 
 ------------
 Installation
@@ -32,11 +34,10 @@ Installation
 .. _github:
 .. _project page: https://github.com/NoahY/q2a-network
 
-.. Sites:
-
 -----------
 Sites
 -----------
+.. Sites:
 Networking sites is partially enabled in the core; there are various ways to accomplish this, depending on your site setup.  If you are using single-sign-on or Wordpress integration, you are half-way there.  If you are not, see the instructions in qa-config.php to set up your sites to user the same qa_users table.  Either way, **both sets of database tables must be in the same database** for this plugin to work.
 
 It is also possible to setup two sites to use the same set of php files, though it is not necessary.  To accomplish this, here's what I do:
@@ -60,6 +61,12 @@ Note: if you are going to use neat urls, copy or link to the original .htaccess 
 6. Repeat steps 2-5 for each site, making sure the table prefix of each site is unique.
 
 This seems to work with Q2A 1.5 to allow multiple sites to use the same core code, plugins, and themes.  If you want to use unique sets of plugins and themes for each site, just delete the symlink for the qa-theme and qa-plugin directories for that site, and replace them with actual directories with actual plugins and themes.
+
+-----------
+Migrating
+-----------
+.. Migrating:
+Below the main admin form, there is another form to migrate posts.  This is highly experimental, and may lead to data loss, hair loss, dead kittens, etc.  This process also moves all children and grandchildren (i.e. answers and comments), votes, flags, and selected answers.  It doesn't move related questions, it just unrelates them.  It also allows you to set the post category, though I'm not sure if this works as expected.  Once you have migrated a post, **you must** go to the site you migrated to and run all the updates at admin/stats.
 
 ----------
 Disclaimer

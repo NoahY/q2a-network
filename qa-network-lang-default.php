@@ -26,7 +26,8 @@
 
 	return array(
 		'widget_title' => 'Network Sites',
-		'network_sites' => 'Network Sites',
+		'network_sites' => 'Network Sites:',
+		'migrated_from_x_y_ago_by_z' => 'Migrated from ^ # ago by $',
 	);
 	
 

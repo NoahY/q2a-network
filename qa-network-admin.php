@@ -18,8 +18,17 @@
 	font-weight:bold;
 	color:blue;
 }
-.qa-network-site-icon {
+.qa-network-site-icon,.qa-network-site-link img {
 	vertical-align:sub;
+}
+#qa-network-site-migrated {
+	background: none repeat scroll 0 0 #DDDDDD;
+	font-size: 125%;
+	font-weight: bold;
+	margin: 20px 0;
+	padding: 20px;
+	text-align: center;
+
 }';
 			case 'network_site_min_points':
 				return 100;
@@ -39,12 +48,14 @@
 			if (qa_clicked('network_site_save')) {
 
 				qa_opt('network_site_enable',(bool)qa_post_text('network_site_enable'));
+				qa_opt('network_site_number',(bool)qa_post_text('network_site_number'));
 				qa_opt('network_site_points',(bool)qa_post_text('network_site_points'));
 				qa_opt('network_site_icons',(bool)qa_post_text('network_site_icons'));
 				qa_opt('network_site_icon_this',(bool)qa_post_text('network_site_icon_this'));
 				qa_opt('network_site_min_points',(int)qa_post_text('network_site_min_points'));
 				qa_opt('network_site_widget_this',(bool)qa_post_text('network_site_widget_this'));
 				qa_opt('network_site_css',qa_post_text('network_site_css'));
+				qa_opt('network_site_migrated_text',(bool)qa_post_text('network_site_migrated_text'));
 
 				$idx = 0;
 				while($idx <= (int)qa_post_text('network_site_number')) {
@@ -100,6 +111,16 @@
 			$fields[] = array(
 				'type' => 'blank',
 			);
+			$fields[] = array(
+				'label' => 'Show migrated notice below migrated questions',
+				'tags' => 'NAME="network_site_migrated_text"',
+				'value' => qa_opt('network_site_migrated_text'),
+				'type' => 'checkbox',
+				'note' => 'For use with migration form (below this form)',
+			);	
+			$fields[] = array(
+				'type' => 'blank',
+			);
 
 			$fields[] = array(
 				'label' => 'Replace points with network points',
@@ -132,8 +153,6 @@
 				'value' => qa_opt('network_site_min_points'),
 				'type' => 'number',
 			);
-
-				
 				
 
 			$fields[] = array(

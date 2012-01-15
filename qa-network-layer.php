@@ -7,11 +7,13 @@
 		function head_custom() {
 			$this->output('<style>',str_replace('^',QA_HTML_THEME_LAYER_URLTOROOT,qa_opt('network_site_css')),'</style>');
 			if(isset($this->content['form_activity'])) {
-				$this->content['form_activity']['fields']['answers'] = array(
-					'type' => 'static',
-					'label' => qa_lang_html('network/network_sites'),
-					'value' => '<SPAN CLASS="qa-uf-user-network-sites">'.$this->network_user_sites($this->content['raw']['userid']).'</SPAN>',
-				);
+				$user = $this->network_user_sites($this->content['raw']['userid']);
+				if($user)
+					$this->content['form_activity']['fields']['answers'] = array(
+						'type' => 'static',
+						'label' => qa_lang_html('network/network_sites'),
+						'value' => '<SPAN CLASS="qa-uf-user-network-sites">'.$user.'</SPAN>',
+					);
 			}
 			qa_html_theme_base::head_custom();
 		}
@@ -30,8 +32,49 @@
 			}
 			qa_html_theme_base::post_meta($post, $class, $prefix, $separator);
 			
-		}		
+		}	
+			
+		function q_view_buttons($q_view) {  
+			qa_html_theme_base::q_view_buttons($q_view);		
+			
+			if($this->template != 'question' || !qa_opt('network_site_migrated_text')) return;
+			
+			// check if migrated
+			
+			$migrated = qa_db_read_one_value(
+				qa_db_query_sub(
+					'SELECT meta_value FROM ^postmeta WHERE meta_key=$ AND post_id=#',
+					'migrated',$q_view['raw']['postid']
+				),
+				true
+			);
+			
+			// show migrated box
+			
+			if($migrated) {
+				$ms = explode('|',$migrated);
+				
+				
+				$idx = 0;
+				$title = '';
+				while($idx <= (int)qa_opt('network_site_number')) {
+					if(qa_opt('network_site_'.$idx.'_prefix') == $ms[0]) {
+						$title = '<a href="'.qa_opt('network_site_'.$idx.'_url').'">'.qa_opt('network_site_'.$idx.'_title').'</a>';
+						break;
+					}
+					$idx++;
+				}
+				if(!$title)
+					return;
+				
+				$text = qa_lang_sub('network/migrated_from_x_y_ago_by_z',$title);
+				$text = str_replace('#',qa_time_to_string(qa_opt('db_time')-(int)$ms[1]),$text);
+				$text = str_replace('$','<a href="'.qa_path_html('user/'.$ms[2],null,qa_opt('site_url')).'">'.$ms[2].'</a>',$text);
 
+				$this->output('<div id="qa-network-site-migrated">',$text,'</div>');
+			}
+		}
+		
 	// worker
 	
 		var $network_points;
