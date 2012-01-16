@@ -25,9 +25,9 @@
 					$points = intval(preg_replace('/[^\d.]/', '', $post['who']['points']['data']));
 					$post['who']['points']['data']=$this->network_total_points($post['raw']['userid'],$points);
 				}
-				if (qa_opt('network_site_icons')) {
+				if (qa_opt('network_site_icons') && isset($post['who']['points']['data'])) {
 					$points = intval(preg_replace('/[^\d.]/', '', $post['who']['points']['data']));
-					$post['who']['suffix'] = @$post['who']['suffix'].$this->network_user_sites($post['raw']['userid'],$points);
+					$post['who']['suffix'] = @$post['who']['suffix'].$this->network_user_sites($post['raw']['userid'],@$points);
 				}
 			}
 			qa_html_theme_base::post_meta($post, $class, $prefix, $separator);
@@ -80,7 +80,7 @@
 		var $network_points;
 
 		function network_total_points($uid,$points) {
-			if($this->network_points[$uid]) {
+			if(@$this->network_points[$uid]) {
 				foreach($this->network_points[$uid] as $point)
 					$points+=$point;
 			}

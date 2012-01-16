@@ -26,7 +26,8 @@
 	qa_register_plugin_module('module', 'qa-network-migrate-admin.php', 'qa_network_migrate_admin', 'Network Site Post Migration');
 	qa_register_plugin_phrases('qa-network-lang-*.php', 'network');
 	qa_register_plugin_module('widget', 'qa-network-widget.php', 'qa_network_widget', 'Network Sites Widget');
-	
+	qa_register_plugin_overrides('qa-network-overrides.php');
+
 
 /*
 	Omit PHP closing tag to help avoid accidental output

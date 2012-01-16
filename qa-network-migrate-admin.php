@@ -100,13 +100,11 @@
 								$this->post_migrate($prefix,$gchild,$ncid);
 								$children++;
 							}
-							qa_post_unindex($gchild['postid']);
-							qa_db_post_delete($gchild['postid']); // also deletes any related voteds due to cascading
+							$this->delete_migrated($gchild);
 						}
 						mysql_free_result($query2);
 					}
-					qa_post_unindex($child['postid']);
-					qa_db_post_delete($child['postid']); // also deletes any related voteds due to cascading
+					$this->delete_migrated($child);
 				}
 				mysql_free_result($query);
 				
@@ -126,9 +124,8 @@
 					'INSERT INTO '.$prefix.'postmeta (post_id,meta_key,meta_value) VALUES (#,$,$)',
 					$nid,'migrated',QA_MYSQL_TABLE_PREFIX.'|'.time().'|'.qa_get_logged_in_handle()
 				);
-
-				qa_post_unindex($post['postid']);
-				qa_db_post_delete($post['postid']); // also deletes any related voteds due to cascading
+				
+				$this->delete_migrated($post);
 
 				$ok = 'Post '.$pid.($children?' and '.$children.' child posts':'').' migrated to '.$sites[qa_post_text('network_site_migrate_site')].'.';
 			}
@@ -207,6 +204,89 @@
 
 			mysql_free_result($query);
 			
+			// make remote request for update
+			
+			$idx = 0;
+			$url = '';
+			while($idx <= (int)qa_opt('network_site_number')) {
+				if(qa_opt('network_site_'.$idx.'_prefix') == $prefix) {
+					$url = qa_opt('network_site_'.$idx.'_url');
+					break;
+				}
+				$idx++;
+			}
+			
+			// set migrate prefix to invoke override, changing the set of tables temporarily -- yikes!
+			
+			global $migrate_change_db;
+			$migrate_change_db = $prefix;
+			
+			require_once QA_INCLUDE_DIR.'qa-db-post-create.php';
+			require_once QA_INCLUDE_DIR.'qa-db-post-update.php';
+			require_once QA_INCLUDE_DIR.'qa-db-points.php';
+			require_once QA_INCLUDE_DIR.'qa-db-votes.php';
+			
+			$post = qa_db_read_one_assoc(
+				qa_db_query_sub(
+					'SELECT * FROM ^posts WHERE postid=#',
+					$nid
+				),
+				true
+			);
+			if($post['type'] == 'Q') { 
+				qa_db_category_path_qcount_update(qa_db_post_get_category_path($post['postid']));
+				qa_db_points_update_ifuser($post['userid'], array('qposts', 'aselects', 'qvoteds', 'upvoteds', 'downvoteds'));
+				qa_db_qcount_update();
+				qa_db_unaqcount_update();
+				qa_db_unselqcount_update();
+				qa_db_unupaqcount_update();
+			}
+			else if($post['type'] == 'A') {  
+				qa_db_points_update_ifuser($post['userid'], array('aposts', 'aselecteds', 'avoteds', 'upvoteds', 'downvoteds'));
+				qa_db_acount_update();
+				qa_db_unaqcount_update();
+				qa_db_unupaqcount_update();
+			}
+			else if($post['type'] == 'C') {
+				qa_db_points_update_ifuser($post['userid'], array('cposts'));
+				qa_db_ccount_update();
+			}
+			
+			$migrate_change_db = null;
+			
 			return $nid;
+		}
+		
+		function delete_migrated($post) {
+
+			// this has to happen first...
+			
+			if($post['type'] == 'Q')
+				qa_db_category_path_qcount_update(qa_db_post_get_category_path($post['postid']));
+
+			// then delete
+			
+			qa_post_unindex($post['postid']);
+			qa_db_post_delete($post['postid']); // also deletes any related voteds due to cascading
+
+			// recalc if not hidden
+			
+			if($post['type'] == 'Q') {
+				qa_db_points_update_ifuser($post['userid'], array('qposts', 'aselects', 'qvoteds', 'upvoteds', 'downvoteds'));
+				qa_db_qcount_update();
+				qa_db_unaqcount_update();
+				qa_db_unselqcount_update();
+				qa_db_unupaqcount_update();
+			}
+			else if($post['type'] == 'A') {  
+				qa_db_points_update_ifuser($post['userid'], array('aposts', 'aselecteds', 'avoteds', 'upvoteds', 'downvoteds'));
+				qa_db_acount_update();
+				qa_db_unaqcount_update();
+				qa_db_unupaqcount_update();
+			}
+			else if($post['type'] == 'C') {
+				qa_db_points_update_ifuser($post['userid'], array('cposts'));
+				qa_db_ccount_update();
+			}
 		}
     }
