@@ -4,7 +4,7 @@
 	Plugin Name: Network Sites
 	Plugin URI: https://github.com/NoahY/q2a-network
 	Plugin Description: Allows networking of sites
-	Plugin Version: 0.2
+	Plugin Version: 0.3
 	Plugin Date: 2012-01-13
 	Plugin Author: NoahY
 	Plugin Author URI: http://www.question2answer.org/
