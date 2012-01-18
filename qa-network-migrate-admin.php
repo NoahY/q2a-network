@@ -17,6 +17,7 @@
 
 		function admin_form(&$qa_content)
 		{
+			require_once QA_INCLUDE_DIR.'qa-app-posts.php';
 			qa_db_query_sub(
 				'CREATE TABLE IF NOT EXISTS ^postmeta (
 				meta_id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -100,11 +101,11 @@
 								$this->post_migrate($prefix,$gchild,$ncid);
 								$children++;
 							}
-							$this->delete_migrated($gchild);
+							qa_post_delete($gchild['postid']);
 						}
 						mysql_free_result($query2);
 					}
-					$this->delete_migrated($child);
+					qa_post_delete($child['postid']);
 				}
 				mysql_free_result($query);
 				
@@ -125,7 +126,7 @@
 					$nid,'migrated',QA_MYSQL_TABLE_PREFIX.'|'.time().'|'.qa_get_logged_in_handle()
 				);
 				
-				$this->delete_migrated($post);
+				qa_post_delete($post['postid']);
 
 				$ok = 'Post '.$pid.($children?' and '.$children.' child posts':'').' migrated to '.$sites[qa_post_text('network_site_migrate_site')].'.';
 			}
@@ -169,7 +170,7 @@
 			);
 		}
 		
-		function post_migrate($prefix,$post,$parent=null,$cat=null) {
+		function post_migrate($prefix,$post,$parentid=null,$cat=null) {
 			require_once QA_INCLUDE_DIR.'qa-app-post-update.php';
 			
 			// get new parent id
@@ -181,7 +182,7 @@
 			// copy post to new site
 			
 			qa_db_query_sub(
-				'INSERT INTO '.$prefix.'posts (type,parentid,categoryid,catidpath1,catidpath2,catidpath3,acount,amaxvote,selchildid,closedbyid,userid,cookieid,createip,lastuserid,lastip,upvotes,downvotes,netvotes,lastviewip,views,hotness,flagcount,format,created,updated,updatetype,title,content,tags,notify) VALUES($,'.($parent?qa_db_escape_string($parent):'NULL').','.($cat?qa_db_escape_string($cat):'NULL').',NULL,NULL,NULL,#,#,#,#,#,#,#,#,#,#,#,#,#,#,#,#,$,#,#,$,$,$,$,$)',
+				'INSERT INTO '.$prefix.'posts (type,parentid,categoryid,catidpath1,catidpath2,catidpath3,acount,amaxvote,selchildid,closedbyid,userid,cookieid,createip,lastuserid,lastip,upvotes,downvotes,netvotes,lastviewip,views,hotness,flagcount,format,created,updated,updatetype,title,content,tags,notify) VALUES($,'.($parentid?qa_db_escape_string($parentid):'NULL').','.($cat?qa_db_escape_string($cat):'NULL').',NULL,NULL,NULL,#,#,#,#,#,#,#,#,#,#,#,#,#,#,#,#,$,#,#,$,$,$,$,$)',
 				$post['type'],$post['acount'],$post['amaxvote'],$post['selchildid'],$post['closedbyid'],$post['userid'],$post['cookieid'],$post['createip'],$post['lastuserid'],$post['lastip'],$post['upvotes'],$post['downvotes'],$post['netvotes'],$post['lastviewip'],$post['views'],$post['hotness'],$post['flagcount'],$post['format'],$post['created'],$post['updated'],$post['updatetype'],$post['title'],$post['content'],$post['tags'],$post['notify']
 			);	
 
@@ -233,21 +234,64 @@
 				),
 				true
 			);
+
+			qa_db_posts_calc_category_path($post['postid']);
+
+			$text=qa_post_content_to_text($post['content'], $post['format']);			
+			
 			if($post['type'] == 'Q') { 
+				$tagstring=qa_post_tags_to_tagstring($post['tags']);
+
 				qa_db_category_path_qcount_update(qa_db_post_get_category_path($post['postid']));
+				qa_db_hotness_update($post['postid']);
+				qa_post_index($post['postid'], 'Q', $post['postid'], null, $post['title'], $post['content'], $post['format'], $text, $tagstring);
+				
 				qa_db_points_update_ifuser($post['userid'], array('qposts', 'aselects', 'qvoteds', 'upvoteds', 'downvoteds'));
+				
 				qa_db_qcount_update();
 				qa_db_unaqcount_update();
 				qa_db_unselqcount_update();
 				qa_db_unupaqcount_update();
 			}
-			else if($post['type'] == 'A') {  
+			else if($post['type'] == 'A') { 
+				$question = qa_db_read_one_assoc(
+					qa_db_query_sub(
+						'SELECT * FROM ^posts WHERE postid=#',
+						$parentid
+					),
+					true
+				);
+				if ($question['type']=='Q')
+					qa_post_index($post['postid'], 'A', $question['postid'], $question['postid'], null, $post['content'], $post['format'], $text, null);
+					
+				qa_db_post_acount_update($question['postid']);
+				qa_db_hotness_update($question['postid']);
 				qa_db_points_update_ifuser($post['userid'], array('aposts', 'aselecteds', 'avoteds', 'upvoteds', 'downvoteds'));
 				qa_db_acount_update();
 				qa_db_unaqcount_update();
 				qa_db_unupaqcount_update();
 			}
 			else if($post['type'] == 'C') {
+				$parent = qa_db_read_one_assoc(
+					qa_db_query_sub(
+						'SELECT * FROM ^posts WHERE postid=#',
+						$parentid
+					),
+					true
+				);
+				if(strpos($parent['type'],'A') === 0)
+					$question =  qa_db_read_one_assoc(
+						qa_db_query_sub(
+							'SELECT * FROM ^posts WHERE postid=#',
+							$parent['postid']
+						),
+						true
+					);
+				else $question = $parent;
+				
+				if ( ($question['type']=='Q') && (($parent['type']=='Q') || ($parent['type']=='A')) ) // only index if antecedents fully visible
+					qa_post_index($post['postid'], 'C', $question['postid'], $parent['postid'], null, $post['content'], $post['format'], $text, null);
+					
 				qa_db_points_update_ifuser($post['userid'], array('cposts'));
 				qa_db_ccount_update();
 			}
@@ -255,38 +299,5 @@
 			$migrate_change_db = null;
 			
 			return $nid;
-		}
-		
-		function delete_migrated($post) {
-
-			// this has to happen first...
-			
-			if($post['type'] == 'Q')
-				qa_db_category_path_qcount_update(qa_db_post_get_category_path($post['postid']));
-
-			// then delete
-			
-			qa_post_unindex($post['postid']);
-			qa_db_post_delete($post['postid']); // also deletes any related voteds due to cascading
-
-			// recalc if not hidden
-			
-			if($post['type'] == 'Q') {
-				qa_db_points_update_ifuser($post['userid'], array('qposts', 'aselects', 'qvoteds', 'upvoteds', 'downvoteds'));
-				qa_db_qcount_update();
-				qa_db_unaqcount_update();
-				qa_db_unselqcount_update();
-				qa_db_unupaqcount_update();
-			}
-			else if($post['type'] == 'A') {  
-				qa_db_points_update_ifuser($post['userid'], array('aposts', 'aselecteds', 'avoteds', 'upvoteds', 'downvoteds'));
-				qa_db_acount_update();
-				qa_db_unaqcount_update();
-				qa_db_unupaqcount_update();
-			}
-			else if($post['type'] == 'C') {
-				qa_db_points_update_ifuser($post['userid'], array('cposts'));
-				qa_db_ccount_update();
-			}
 		}
     }
