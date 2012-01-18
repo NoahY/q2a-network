@@ -66,7 +66,7 @@ This seems to work with Q2A 1.5 to allow multiple sites to use the same core cod
 Migrating
 -----------
 .. Migrating:
-Below the main admin form, there is another form to migrate posts.  This is highly experimental, and may lead to data loss, hair loss, dead kittens, etc.  This process also moves all children and grandchildren (i.e. answers and comments), votes, flags, and selected answers.  It doesn't move related questions, it just unrelates them.  It also allows you to set the post category, though I'm not sure if this works as expected.  Once you have migrated a post, **you must** go to the site you migrated to and run all the updates at admin/stats.
+Below the main admin form, there is another form to migrate posts.  This is experimental, and may lead to data loss, hair loss, dead kittens, etc.  This process also moves all children and grandchildren (i.e. answers and comments), votes, flags, and selected answers.  It doesn't move related questions, it just unrelates them.  It also allows you to set the post category.  Once you have migrated a post, you may want to go to the site you migrated to and run all the updates at admin/stats, though the plugin attempts to perform this automatically.
 
 ----------
 Disclaimer
