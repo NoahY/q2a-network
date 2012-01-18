@@ -16,7 +16,7 @@
 	font-size:110%;
 	padding-bottom:8px;
 	font-weight:bold;
-	color:blue;
+	text-decoration:none;
 }
 .qa-network-site-icon,.qa-network-site-link img {
 	vertical-align:sub;
