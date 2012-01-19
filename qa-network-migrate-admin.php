@@ -183,7 +183,7 @@
 			
 			qa_db_query_sub(
 				'INSERT INTO '.$prefix.'posts (type,parentid,categoryid,catidpath1,catidpath2,catidpath3,acount,amaxvote,selchildid,closedbyid,userid,cookieid,createip,lastuserid,lastip,upvotes,downvotes,netvotes,lastviewip,views,hotness,flagcount,format,created,updated,updatetype,title,content,tags,notify) VALUES($,'.($parentid?qa_db_escape_string($parentid):'NULL').','.($cat?qa_db_escape_string($cat):'NULL').',NULL,NULL,NULL,#,#,#,#,#,#,#,#,#,#,#,#,#,#,#,#,$,#,#,$,$,$,$,$)',
-				$post['type'],$post['acount'],$post['amaxvote'],$post['selchildid'],$post['closedbyid'],$post['userid'],$post['cookieid'],$post['createip'],$post['lastuserid'],$post['lastip'],$post['upvotes'],$post['downvotes'],$post['netvotes'],$post['lastviewip'],$post['views'],$post['hotness'],$post['flagcount'],$post['format'],$post['created'],$post['updated'],$post['updatetype'],$post['title'],$post['content'],$post['tags'],$post['notify']
+				$post['type'],($post['acount']?$post['acount']:0),($post['amaxvote']?$post['amaxvote']:0),$post['selchildid'],$post['closedbyid'],$post['userid'],$post['cookieid'],$post['createip'],$post['lastuserid'],$post['lastip'],$post['upvotes'],$post['downvotes'],$post['netvotes'],$post['lastviewip'],($post['views']?$post['views']:0),$post['hotness'],$post['flagcount'],($post['format']?$post['format']:''),$post['created'],$post['updated'],$post['updatetype'],$post['title'],$post['content'],$post['tags'],$post['notify']
 			);	
 
 			mysql_free_result($result);
