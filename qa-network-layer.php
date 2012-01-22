@@ -20,7 +20,6 @@
 
 		function post_meta($post, $class, $prefix=null, $separator='<BR/>')
 		{
-			qa_error_log($post);
 			if(qa_opt('network_site_enable')) {
 				$uid = @$post['raw']['ouserid'] ? $post['raw']['ouserid']:$post['raw']['userid'];
 
