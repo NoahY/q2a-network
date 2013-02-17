@@ -48,7 +48,7 @@
 			if (qa_clicked('network_site_save')) {
 
 				qa_opt('network_site_enable',(bool)qa_post_text('network_site_enable'));
-				qa_opt('network_site_number',(bool)qa_post_text('network_site_number'));
+				qa_opt('network_site_number',(int)qa_post_text('network_site_number'));
 				qa_opt('network_site_points',(bool)qa_post_text('network_site_points'));
 				qa_opt('network_site_icons',(bool)qa_post_text('network_site_icons'));
 				qa_opt('network_site_icon_this',(bool)qa_post_text('network_site_icon_this'));
@@ -221,7 +221,7 @@
 					),
 					array(
 					'label' => qa_lang_html('admin/reset_options_button'),
-					'tags' => 'NAME="network_sitereset"',
+					'tags' => 'NAME="network_site_reset"',
 					),
 				),
 			);

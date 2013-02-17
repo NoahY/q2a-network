@@ -35,6 +35,7 @@
 			// get sites
 
 			$idx = 0;
+			$sites = array();
 			while(qa_opt('network_site_'.$idx.'_url')) {
 				$sites[qa_opt('network_site_'.$idx.'_prefix')] = qa_opt('network_site_'.$idx++.'_title');
 			}
