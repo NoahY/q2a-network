@@ -111,7 +111,7 @@
 				$html.= '<a class="qa-network-site-icon" href="'.qa_opt('site_url').'" title="'.qa_opt('site_title').': '.($this_points==1?qa_lang_html('main/1_point'):qa_lang_html_sub('main/x_points',number_format($this_points))).'"><img src="'.qa_opt('site_url').'favicon.ico"/></a>';
 			}
 			while(qa_opt('network_site_'.$idx.'_url')) {
-				if($this->network_points[$uid]) {
+				if(@$this->network_points[$uid]) {
 						$points = $this->network_points[$uid][$idx];
 				}
 				else {
